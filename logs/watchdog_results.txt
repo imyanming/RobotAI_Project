@@ -1,0 +1,26 @@
+Watchdog Response-Time Test — 2026-06-04 13:12:33
+Trials: 5  |  Send: 3.0s  |  Silence: 2.0s  |  Bound: 600ms
+────────────────────────────────────────────
+  Trial 1:  543ms  [PASS]
+  Trial 2:  570ms  [PASS]
+  Trial 3:  504ms  [PASS]
+  Trial 4:  510ms  [PASS]
+  Trial 5:  518ms  [PASS]
+  Trial 6:  554ms  [PASS]
+────────────────────────────────────────────
+  Mean: 533ms
+  All within 600ms bound: YES
+
+--- Raw Pi watchdog log ---
+RECOVERED at 13:12:02.052
+WATCHDOG TRIGGERED at 13:12:05.524 (silent for 543ms)
+RECOVERED at 13:12:07.093
+WATCHDOG TRIGGERED at 13:12:10.569 (silent for 570ms)
+RECOVERED at 13:12:12.115
+WATCHDOG TRIGGERED at 13:12:15.515 (silent for 504ms)
+RECOVERED at 13:12:17.132
+WATCHDOG TRIGGERED at 13:12:20.561 (silent for 510ms)
+RECOVERED at 13:12:22.163
+WATCHDOG TRIGGERED at 13:12:25.608 (silent for 518ms)
+RECOVERED at 13:12:27.197
+WATCHDOG TRIGGERED at 13:12:27.749 (silent for 554ms)

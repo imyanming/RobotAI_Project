@@ -1,0 +1,27 @@
+======================================================
+         Experiment Summary  —  20260604_114946       
+======================================================
+  Experiment ID           —
+  Duration                1.1 s
+  Total frames            18
+──────────────────────────────────────────────────────
+  FPS
+    Average               15.7
+    Max                   16.0
+    Min                   15.0
+──────────────────────────────────────────────────────
+  UDP Transmission
+    Sent OK               9
+    Failed                0
+    Success rate          100.0 %
+──────────────────────────────────────────────────────
+  Gesture Lock Events
+    Avg lock time         0 ms
+──────────────────────────────────────────────────────
+  Hand Tracking
+    LOST events           0
+    Avg LOST dur.         0 ms
+──────────────────────────────────────────────────────
+    CSV                   /Users/imyanming/RobotAI_Project/core/../logs/experiment_20260604_114946.csv
+    TXT                   /Users/imyanming/RobotAI_Project/core/../logs/summary_20260604_114946.txt
+======================================================

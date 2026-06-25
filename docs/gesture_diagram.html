@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Gesture Vocabulary</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 7in;
+    height: 3.6in;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    background: #ffffff;
+    color: #000000;
+  }
+  .grid {
+    width: 7in;
+    height: 3.6in;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    border: 1.5pt solid #000;
+  }
+  .cell {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    border: 0.75pt solid #000;
+    padding: 4pt 2pt 5pt 2pt;
+    position: relative;
+  }
+  .cell .hand {
+    width: 1.05in;
+    height: 1.05in;
+    margin-top: 1pt;
+  }
+  .label-block {
+    text-align: center;
+    line-height: 1.18;
+  }
+  .gname {
+    font-size: 9.5pt;
+    font-weight: 700;
+    letter-spacing: 0.2pt;
+  }
+  .cmd {
+    font-size: 8.5pt;
+    font-weight: 700;
+    font-family: "Courier New", monospace;
+    border: 0.75pt solid #000;
+    border-radius: 2pt;
+    padding: 0 4pt;
+    display: inline-block;
+    margin-top: 1.5pt;
+  }
+  .func {
+    font-size: 8pt;
+    font-style: italic;
+    margin-top: 1.5pt;
+  }
+  .row-tag {
+    position: absolute;
+    top: 2pt;
+    left: 3pt;
+    font-size: 6.5pt;
+    color: #555;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+  <div class="grid" id="grid"></div>
+
+<script>
+// ── Gesture vocabulary (matches Table 1 of the paper) ──────────────────────
+const GESTURES = [
+  { idx: 1, name: "Fist",      fingers: {thumb:false, index:false, middle:false, ring:false, pinky:false}, cmd: "SPACE", fn: "Stop" },
+  { idx: 2, name: "Thumb",     fingers: {thumb:true,  index:false, middle:false, ring:false, pinky:false}, cmd: "Q",     fn: "Rotate CW" },
+  { idx: 3, name: "L-Shape",   fingers: {thumb:true,  index:true,  middle:false, ring:false, pinky:false}, cmd: "E",     fn: "Rotate CCW" },
+  { idx: 4, name: "Index",     fingers: {thumb:false, index:true,  middle:false, ring:false, pinky:false}, cmd: "W",     fn: "Forward" },
+  { idx: 5, name: "2 Fingers", fingers: {thumb:false, index:true,  middle:true,  ring:false, pinky:false}, cmd: "S",     fn: "Backward" },
+  { idx: 6, name: "3 Fingers", fingers: {thumb:false, index:true,  middle:true,  ring:true,  pinky:false}, cmd: "A",     fn: "Strafe Left" },
+  { idx: 7, name: "4 Fingers", fingers: {thumb:false, index:true,  middle:true,  ring:true,  pinky:true},  cmd: "D",     fn: "Strafe Right" },
+  { idx: 8, name: "Open Palm", fingers: {thumb:true,  index:true,  middle:true,  ring:true,  pinky:true},  cmd: "BOOST", fn: "Max Speed" },
+];
+
+// ── Simple, consistent line-art hand generator ──────────────────────────────
+// ViewBox 0 0 200 260. Palm centered, 4 fingers across the top, thumb on the
+// left side. Extended fingers are long capsules; curled fingers are short
+// knuckle bumps. Palm + wrist are drawn last so finger bases are hidden
+// cleanly under them.
+function handSVG(state) {
+  const SW = 5; // stroke width
+  const fingerX = { index: 80, middle: 100, ring: 120, pinky: 140 };
+  const extendedTop = { index: 55, middle: 38, ring: 50, pinky: 70 };
+  const curledTop = { index: 118, middle: 116, ring: 118, pinky: 122 };
+  const fingerW = 17;
+  const palmTop = 132;
+  const fingerBottom = palmTop + 28; // overlap into palm, hidden later
+
+  let fingers = "";
+  ["index", "middle", "ring", "pinky"].forEach(f => {
+    const x = fingerX[f];
+    const top = state[f] ? extendedTop[f] : curledTop[f];
+    const h = fingerBottom - top;
+    fingers += `<rect x="${x - fingerW/2}" y="${top}" width="${fingerW}" height="${h}" rx="${fingerW/2}" fill="#fff" stroke="#000" stroke-width="${SW}"/>`;
+  });
+
+  // Thumb: pivot at the palm's left edge, rotated outward when extended.
+  const thumbPivotX = 64, thumbPivotY = 168;
+  let thumb;
+  if (state.thumb) {
+    // long capsule, rotated about its base point so it points up-and-out
+    thumb = `<g transform="rotate(-58 ${thumbPivotX} ${thumbPivotY})">
+                <rect x="${thumbPivotX - 11}" y="${thumbPivotY - 95}" width="22" height="105" rx="11" fill="#fff" stroke="#000" stroke-width="${SW}"/>
+              </g>`;
+  } else {
+    // short curled knuckle bump against the palm
+    thumb = `<g transform="rotate(-25 ${thumbPivotX} ${thumbPivotY})">
+                <rect x="${thumbPivotX - 12}" y="${thumbPivotY - 26}" width="24" height="40" rx="12" fill="#fff" stroke="#000" stroke-width="${SW}"/>
+              </g>`;
+  }
+
+  const wrist = `<rect x="78" y="208" width="44" height="46" rx="6" fill="#fff" stroke="#000" stroke-width="${SW}"/>`;
+  const palm = `<rect x="58" y="${palmTop}" width="84" height="92" rx="18" fill="#fff" stroke="#000" stroke-width="${SW}"/>`;
+
+  return `<svg class="hand" viewBox="0 0 200 260" xmlns="http://www.w3.org/2000/svg">
+            ${thumb}
+            ${fingers}
+            ${wrist}
+            ${palm}
+          </svg>`;
+}
+
+const grid = document.getElementById("grid");
+GESTURES.forEach(g => {
+  const cell = document.createElement("div");
+  cell.className = "cell";
+  cell.innerHTML = `
+    <div class="row-tag">${g.idx}</div>
+    ${handSVG(g.fingers)}
+    <div class="label-block">
+      <div class="gname">${g.name}</div>
+      <span class="cmd">${g.cmd}</span>
+      <div class="func">${g.fn}</div>
+    </div>`;
+  grid.appendChild(cell);
+});
+</script>
+</body>
+</html>

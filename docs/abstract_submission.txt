@@ -1,0 +1,34 @@
+Remote telepresence control of mobile robots in constrained
+environments demands low-latency command pipelines, intuitive
+human-machine interfaces, and dependable failsafe mechanisms —
+yet existing systems either rely on resource-intensive onboard
+AI or physically taxing gesture modalities that induce Gorilla
+Arm Syndrome in operators.
+Gorilla Arm Syndrome refers to the muscular fatigue
+experienced when holding an arm outstretched for extended
+periods, a well-documented barrier to sustained gesture
+interface adoption.
+This paper presents an
+Edge-Host Decoupled architecture for a six-directional
+omnidirectional vehicle based on omniwheels, deployed on
+an extremely resource-constrained Raspberry Pi 1 Model B+
+(700 MHz, 512 MB RAM). All AI inference is offloaded to a
+host machine running Google MediaPipe, which maps single-hand
+finger-count micro-gestures — performed with the arm resting
+flat on a surface — to holonomic motion commands
+(forward, backward, left, right, clockwise, counter-clockwise).
+A latch-state machine locks each command after three
+consecutive confirmation frames, allowing the operator to
+remove their hand entirely while the vehicle continues
+executing the manoeuvre. Dependability is enforced by a
+UDP watchdog that autonomously halts the vehicle within
+533 ms of communication loss.
+Experimental evaluation demonstrates a gesture recognition
+accuracy of 98.1% across eight gesture classes,
+and an end-to-end command latency of 1260 ms.
+The proposed system proves that dependable, zero-fatigue
+telepresence control is achievable even on decade-old
+edge hardware.
+The mobile base is designed as the locomotion layer for
+integration with robotic arm systems, targeting industrial
+logistics and inspection applications.
