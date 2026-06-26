@@ -8,3 +8,9 @@ logs/*.csv
 .DS_Store
 ~$*.docx
 archive/
+.claude/
+referencepap/
+docs/*.docx
+docs/*.HEIC
+docs/*.jpeg
+photo/
