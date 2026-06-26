@@ -30,15 +30,15 @@
       "Bash(textutil -convert txt -stdout ICKII_paper_draft.docx)",
       "Read(//tmp/**)",
       "Bash(jobs -l)",
-      "Bash(curl -sv --max-time 8 http://192.168.68.112:8000/stream.mjpg -o /tmp/stream_test.mjpg)",
-      "Bash(curl -s --max-time 6 http://192.168.68.112:8000/stream.mjpg -o /tmp/stream_test2.mjpg)",
-      "Bash(curl -s --max-time 8 http://192.168.68.112:8000/stream.mjpg -o /tmp/stream_test3.mjpg)",
+      "Bash(curl -sv --max-time 8 http://192.168.68.102:8000/stream.mjpg -o /tmp/stream_test.mjpg)",
+      "Bash(curl -s --max-time 6 http://192.168.68.102:8000/stream.mjpg -o /tmp/stream_test2.mjpg)",
+      "Bash(curl -s --max-time 8 http://192.168.68.102:8000/stream.mjpg -o /tmp/stream_test3.mjpg)",
       "Bash(xxd /tmp/stream_test3.mjpg)",
       "Bash(rm -f pi_fast_stream.py pi_udp_omni.py)",
       "Bash(rm -rf __pycache__ core/__pycache__)",
-      "Bash(curl -s --max-time 8 http://192.168.68.112:8000/stream.mjpg -o /tmp/verify_stream.mjpg)",
+      "Bash(curl -s --max-time 8 http://192.168.68.102:8000/stream.mjpg -o /tmp/verify_stream.mjpg)",
       "Bash(xxd /tmp/verify_stream.mjpg)",
-      "Bash(nc -u -w1 192.168.68.112 9000)",
+      "Bash(nc -u -w1 192.168.68.102 9000)",
       "Bash(mkdir -p /tmp_extract_check)",
       "Bash(unzip -o ICKII_paper_draft.docx -d /private/tmp/claude-501/-Users-imyanming-RobotAI-Project/80e5c207-c539-414e-972f-72b523921e5b/scratchpad/docx_extract)",
       "WebFetch(domain:arxiv.org)",
@@ -46,7 +46,8 @@
       "WebFetch(domain:doi.org)",
       "WebFetch(domain:api.crossref.org)",
       "Bash(pip show *)",
-      "Bash(pandoc ICKII_paper_draft.docx --to=plain)"
+      "Bash(pandoc ICKII_paper_draft.docx --to=plain)",
+      "Bash(scp *)"
     ]
   }
 }

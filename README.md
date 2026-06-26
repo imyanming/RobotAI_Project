@@ -86,11 +86,11 @@ The Pi itself keeps its own copy of `core/{pi_fast_stream.py,pi_udp_omni.py}` pl
 ### 1. Set up the Raspberry Pi from scratch
 
 ```bash
-ssh imyanming@192.168.68.112
+ssh imyanming@192.168.68.102
 
 # System packages
 sudo apt update
-sudo apt install -y python3-gpiozero python3-opencv python3-picamera2
+sudo apt install -y python3-gpiozero python3-picamera2 python3-opencv
 
 # Project files: copy core/pi_fast_stream.py, core/pi_udp_omni.py, and start.sh
 # from this repo's pi/ folder into ~/RobotAI_Project/core/ and ~/RobotAI_Project/ on the Pi
@@ -110,7 +110,7 @@ Notes specific to this hardware (Pi 1 B+, Bookworm/libcamera):
 ### 2. Start the robot (Pi)
 
 ```bash
-ssh imyanming@192.168.68.112
+ssh imyanming@192.168.68.102
 ~/RobotAI_Project/start.sh
 ```
 
@@ -159,7 +159,7 @@ for i in $(seq 1 254); do ping -c 1 -W 1 192.168.68.$i &>/dev/null && echo "192.
 
 **Camera not working?** SSH into the Pi and check libcamera sees it (not `vcgencmd`, which is unreliable on this OS):
 ```bash
-ssh imyanming@192.168.68.112
+ssh imyanming@192.168.68.102
 rpicam-hello --list-cameras
 ```
 
@@ -171,7 +171,7 @@ pip install -r requirements.txt
 
 **No video / no motor response after `start.sh`?** Check the two services are actually running and inspect their logs:
 ```bash
-ssh imyanming@192.168.68.112
+ssh imyanming@192.168.68.102
 pgrep -fa 'pi_fast_stream|pi_udp_omni'
 tail -n 30 ~/RobotAI_Project/logs/pi_fast_stream.log ~/RobotAI_Project/logs/pi_udp_omni.log
 ```
@@ -212,7 +212,7 @@ pip install -r requirements.txt
 **Raspberry Pi (Edge):** installed via apt, not pip (pip is not used for system camera/GPIO
 bindings on this OS):
 ```bash
-sudo apt install -y python3-gpiozero python3-opencv python3-picamera2
+sudo apt install -y python3-gpiozero python3-picamera2 python3-opencv
 ```
 
 ---

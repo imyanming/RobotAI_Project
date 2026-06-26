@@ -94,7 +94,7 @@ The Pi itself keeps its own copy of `core/{pi_fast_stream.py,pi_udp_omni.py}` pl
 ### 1. Set up the Raspberry Pi from scratch
 
 ```bash
-ssh imyanming@192.168.68.112
+ssh imyanming@192.168.68.102
 
 # System packages
 sudo apt update
@@ -118,7 +118,7 @@ Notes specific to this hardware (Pi 1 B+, Bookworm/libcamera):
 ### 2. Start the robot (Pi)
 
 ```bash
-ssh imyanming@192.168.68.112
+ssh imyanming@192.168.68.102
 ~/RobotAI_Project/start.sh
 ```
 
@@ -167,7 +167,7 @@ for i in $(seq 1 254); do ping -c 1 -W 1 192.168.68.$i &>/dev/null && echo "192.
 
 **Camera not working?** SSH into the Pi and check libcamera sees it (not `vcgencmd`, which is unreliable on this OS):
 ```bash
-ssh imyanming@192.168.68.112
+ssh imyanming@192.168.68.102
 rpicam-hello --list-cameras
 ```
 
@@ -179,7 +179,7 @@ pip install -r requirements.txt
 
 **No video / no motor response after `start.sh`?** Check the two services are actually running and inspect their logs:
 ```bash
-ssh imyanming@192.168.68.112
+ssh imyanming@192.168.68.102
 pgrep -fa 'pi_fast_stream|pi_udp_omni'
 tail -n 30 ~/RobotAI_Project/logs/pi_fast_stream.log ~/RobotAI_Project/logs/pi_udp_omni.log
 ```
@@ -279,8 +279,8 @@ from experiment_logger import ExperimentLogger
 # ─────────────────────────────────────────
 #  Network / communication settings
 # ─────────────────────────────────────────
-STREAM_URL   = "http://192.168.68.112:8000/stream.mjpg"
-PI_HOST      = "192.168.68.112"
+STREAM_URL   = "http://192.168.68.102:8000/stream.mjpg"
+PI_HOST      = "192.168.68.102"
 PI_PORT      = 9000
 UDP_INTERVAL = 0.10
 MAX_BUF      = 65536
@@ -1297,7 +1297,7 @@ from datetime import datetime
 # ─────────────────────────────────────────
 #  Config
 # ─────────────────────────────────────────
-PI_HOST       = "192.168.68.112"
+PI_HOST       = "192.168.68.102"
 PI_PORT       = 9000
 PI_USER       = "imyanming"
 PI_PASS       = "1234"

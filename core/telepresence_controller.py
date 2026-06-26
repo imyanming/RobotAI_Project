@@ -29,8 +29,8 @@ from experiment_logger import ExperimentLogger
 # ─────────────────────────────────────────
 #  Network / communication settings
 # ─────────────────────────────────────────
-STREAM_URL   = "http://192.168.68.112:8000/stream.mjpg"
-PI_HOST      = "192.168.68.112"
+STREAM_URL   = "http://192.168.68.102:8000/stream.mjpg"
+PI_HOST      = "192.168.68.102"
 PI_PORT      = 9000
 UDP_INTERVAL = 0.10
 MAX_BUF      = 65536
