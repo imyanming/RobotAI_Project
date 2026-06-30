@@ -1,9 +1,17 @@
+"""
+gesture_engine.py — Finger-count gesture classifier and latch state machine.
+
+Classifies single-hand MediaPipe landmarks into one of eight commands, then
+manages the IDLE / TRACKING / LOCKED / LOST state machine that prevents
+unintentional motion (the 'Midas Touch' problem) by requiring an explicit
+CLUTCH (open-palm) wake gesture before any motion command is accepted.
+"""
 TRANS_SPEED = 0.65
 ROT_SPEED   = 0.30
 
 _CONFIRM_FRAMES = 3   # consecutive frames to lock a new gesture
 _LOST_THRESH    = 5   # absent frames before declaring LOST
-_BOOST_CMD      = "__BOOST__"
+_CLUTCH_CMD     = "__CLUTCH__"
 
 
 class GestureEngine:
@@ -11,27 +19,29 @@ class GestureEngine:
     Finger-count static-pose gesture recogniser.
 
     update(hand_landmarks | None) → (cmd, speed)
-    get_state()                   → "TRACKING" | "LOCKED" | "LOST"
+    get_state()                   → "IDLE" | "TRACKING" | "LOCKED" | "LOST"
 
     Finger → command mapping
     ──────────────────────────────────────────────
-    0  fingers  (fist)                      SPACE   stop / clear lock
+    0  fingers  (fist)                      SPACE   stop / lock to IDLE
     thumb only                              Q       CW  rotate
     thumb + index  (L-shape)                E       CCW rotate
     index only                              W       forward
     index + middle                          S       backward
     index + middle + ring                   A       strafe left
     index + middle + ring + pinky           D       strafe right
-    all 5 fingers                           BOOST   hold direction, speed → 100 %
+    all 5 fingers                           CLUTCH  wake up from IDLE
 
     States
     ──────
-    TRACKING  hand present, no command locked yet
+    IDLE      system asleep, ignores all gestures except CLUTCH (all 5 fingers)
+    TRACKING  hand present, system awake, no movement command locked yet
     LOCKED    a command is active (hand present or brief absence ≤ LOST_THRESH)
     LOST      hand absent > LOST_THRESH frames; locked cmd still sent
     """
 
     def __init__(self):
+        self.state         = 'IDLE'
         self._locked_cmd   = "SPACE"
         self._locked_speed = 0.0
         self._pending      = None
@@ -43,6 +53,7 @@ class GestureEngine:
     def get_debug_info(self) -> dict:
         """Return internal state for logging / HUD display."""
         return {
+            'state':       self.state,
             'pending':     self._pending,
             'streak':      self._streak,
             'lost_frames': self._lost_frames,
@@ -50,6 +61,7 @@ class GestureEngine:
 
     def reset(self):
         """Full reset — for program startup only."""
+        self.state         = 'IDLE'
         self._locked_cmd   = "SPACE"
         self._locked_speed = 0.0
         self._pending      = None
@@ -57,11 +69,13 @@ class GestureEngine:
         self._lost_frames  = 0
 
     def get_state(self) -> str:
+        if self.state == 'IDLE':
+            return "IDLE"
         if self._lost_frames >= _LOST_THRESH:
             return "LOST"
         if self._lost_frames > 0 or self._locked_cmd != "SPACE":
             return "LOCKED"
-        return "TRACKING"
+        return self.state
 
     def update(self, hand_landmarks) -> tuple:
         """
@@ -84,10 +98,6 @@ class GestureEngine:
             self._streak  = 0
             return self._locked_cmd, self._locked_speed
 
-        if raw_cmd == _BOOST_CMD:
-            raw_cmd   = self._locked_cmd
-            raw_speed = 1.0 if self._locked_cmd != "SPACE" else 0.0
-
         if raw_cmd == self._pending:
             self._streak += 1
         else:
@@ -95,9 +105,34 @@ class GestureEngine:
             self._streak  = 1
 
         if self._streak >= _CONFIRM_FRAMES:
-            self._locked_cmd   = raw_cmd
-            self._locked_speed = raw_speed
-            self._streak       = _CONFIRM_FRAMES
+            confirmed_gesture = raw_cmd
+            confirmed_speed = raw_speed
+            self._streak = _CONFIRM_FRAMES
+
+            if self.state == 'IDLE':
+                if confirmed_gesture == _CLUTCH_CMD:
+                    self.state = 'TRACKING'
+                    print("System Awakened!")
+                self._locked_cmd = "SPACE"
+                self._locked_speed = 0.0
+                return 'SPACE', 0.0
+
+            else:
+                if confirmed_gesture == 'SPACE':  # 看到握拳，強制煞車並重新上鎖休眠！
+                    self.state = 'IDLE'
+                    self._locked_cmd = "SPACE"
+                    self._locked_speed = 0.0
+                    print("System Locked (IDLE).")
+                    return 'SPACE', 0.0
+
+                elif confirmed_gesture == _CLUTCH_CMD:
+                    # 已經喚醒的狀態下再看到全開手掌，維持 TRACKING (或忽略)
+                    return 'SPACE', 0.0
+
+                self._locked_cmd   = confirmed_gesture
+                self._locked_speed = confirmed_speed
+                if self.state == 'TRACKING':
+                    self.state = 'LOCKED'
 
         return self._locked_cmd, self._locked_speed
 
@@ -122,7 +157,7 @@ def _classify(lm):
         return "SPACE", 0.0
 
     if all((t, i, m, r, p)):
-        return _BOOST_CMD, 1.0
+        return _CLUTCH_CMD, 0.0
 
     if (t, i, m, r, p) == (True,  False, False, False, False):
         return "Q", ROT_SPEED

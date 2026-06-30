@@ -45,7 +45,34 @@ UDP command ──────────────────→ pi_udp_omn
 | Index + Middle | — | S | Backward |
 | Index + Middle + Ring | — | A | Strafe left |
 | Index + Middle + Ring + Pinky | — | D | Strafe right |
-| All five | Open palm | BOOST | Max speed (inherit direction) |
+| All five | Open palm | CLUTCH | Enable motion (Wake up system) |
+
+> **SPACE** from any non-IDLE state immediately stops the robot and returns to IDLE, requiring another CLUTCH to re-enable motion.
+
+---
+
+## Safety Architecture — 4-Layer Dependability Stack
+
+| Layer | Mechanism | What it prevents |
+|---|---|---|
+| 1 | **Safety Clutch (CLUTCH)** | System starts in IDLE — all motion commands silently ignored until operator shows open palm |
+| 2 | **Gesture Confirmation Gate** | Same gesture must appear in 3 consecutive frames before it is accepted (rejects transient misclassifications) |
+| 3 | **UDP Watchdog** | Robot halts within ≤ 600 ms (mean 533 ms) of any communication loss — Wi-Fi drop, host crash, cable pull |
+| 4 | **Motor Safe-Transition Guard** | Full stop + 80 ms pause before every direction change; prevents H-bridge damage from instantaneous reversal |
+
+### CLUTCH / IDLE State Machine
+
+```
+[IDLE] ──── Open palm (CLUTCH) ──────→ [TRACKING]
+  ↑                                          ↓  gesture confirmed (3 frames)
+  └──── Fist (SPACE) ◄──── [LOST] ←──→ [LOCKED]
+```
+
+- **IDLE** — system asleep; only CLUTCH recognised
+- **TRACKING** — system awake, no motion command locked yet
+- **LOCKED** — a motion command is active, retransmitted every 100 ms
+- **LOST** — hand absent but command still retransmitting (operator can lower hand freely)
+- Fist from any non-IDLE state → immediate stop + return to IDLE
 
 ---
 
@@ -62,8 +89,9 @@ RobotAI_Project/
 │   ├── pi_fast_stream.py             # Mirror of the Pi's MJPEG stream server (port 8000)
 │   └── pi_udp_omni.py                # Mirror of the Pi's UDP command receiver + motor control
 ├── docs/
-│   ├── ICKII_paper_draft.docx       # Full paper draft
 │   ├── architecture_v2.png          # System architecture diagram
+│   ├── gesture_diagram.png          # Figure 3 — 8-gesture vocabulary diagram
+│   ├── accuracy_chart.png           # Figure 5 — per-class accuracy chart
 │   └── SUBMISSION_CHECKLIST.md      # Conference submission checklist
 ├── logs/                            # Experiment logs (auto-generated)
 │   ├── accuracy_20260604.txt        # Gesture accuracy test results (98.1%)

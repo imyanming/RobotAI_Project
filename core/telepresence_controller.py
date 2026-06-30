@@ -23,7 +23,7 @@ import socket
 import sys
 import os
 sys.path.insert(0, os.path.dirname(__file__))
-from gesture_engine import GestureEngine, _classify, _BOOST_CMD
+from gesture_engine import GestureEngine, _classify, _CLUTCH_CMD
 from experiment_logger import ExperimentLogger
 
 # ─────────────────────────────────────────
@@ -108,12 +108,15 @@ class CommandSender:
 #  Command display labels / state colors (HUD only)
 # ─────────────────────────────────────────
 _LABEL = {
-    "W":     "FORWARD ▲",     "S": "BACKWARD ▼",
-    "A":     "STRAFE LEFT ◀", "D": "STRAFE RIGHT ▶",
-    "Q":     "ROTATE CW ↻",   "E": "ROTATE CCW ↺",
-    "SPACE": "STOP",
+    "W":          "FORWARD ▲",     "S": "BACKWARD ▼",
+    "A":          "STRAFE LEFT ◀", "D": "STRAFE RIGHT ▶",
+    "Q":          "ROTATE CW ↻",   "E": "ROTATE CCW ↺",
+    "SPACE":      "STOP",
+    _CLUTCH_CMD:  "SYSTEM WAKE UP",
 }
+
 _STATE_COLOR = {
+    "IDLE":     (150, 150, 150),
     "TRACKING": (100, 220, 100),
     "LOCKED":   (50,  200, 255),
     "LOST":     (60,  60,  200),
@@ -138,14 +141,14 @@ _KEYMAP = """
 #  Gesture accuracy benchmark (8 poses x TRIALS each, triggered by 'T')
 # ─────────────────────────────────────────
 _TEST_GESTURES = [
-    ("SPACE", "STOP",         "Fist — all fingers closed"),
-    ("Q",     "ROTATE CW",    "Thumb only"),
-    ("E",     "ROTATE CCW",   "Thumb + Index  (L-shape)"),
-    ("W",     "FORWARD",      "Index finger only"),
-    ("S",     "BACKWARD",     "Index + Middle"),
-    ("A",     "STRAFE LEFT",  "3 fingers  (index, middle, ring)"),
-    ("D",     "STRAFE RIGHT", "4 fingers  (index, middle, ring, pinky)"),
-    ("BOOST", "BOOST",        "Open palm — all 5 fingers"),
+    ("SPACE",      "STOP",         "Fist — all fingers closed"),
+    ("Q",          "ROTATE CW",    "Thumb only"),
+    ("E",          "ROTATE CCW",   "Thumb + Index  (L-shape)"),
+    ("W",          "FORWARD",      "Index finger only"),
+    ("S",          "BACKWARD",     "Index + Middle"),
+    ("A",          "STRAFE LEFT",  "3 fingers  (index, middle, ring)"),
+    ("D",          "STRAFE RIGHT", "4 fingers  (index, middle, ring, pinky)"),
+    (_CLUTCH_CMD,  "WAKE UP",      "Open palm — all 5 fingers"),
 ]
 
 _LOG_DIR = os.path.join(os.path.dirname(__file__), '..', 'logs')
@@ -188,8 +191,7 @@ class GestureAccuracyTest:
         return _TEST_GESTURES[self.gesture_idx][0]
 
     def _raw_matches(self, raw_cmd):
-        target = self._target_cmd()
-        return raw_cmd == (_BOOST_CMD if target == "BOOST" else target)
+        return raw_cmd == self._target_cmd()
 
     def update(self, hand_lm, now):
         if not self.active:
