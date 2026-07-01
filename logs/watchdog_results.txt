@@ -1,5 +1,5 @@
 Watchdog Response-Time Test — 2026-06-04 13:12:33
-Trials: 5  |  Send: 3.0s  |  Silence: 2.0s  |  Bound: 600ms
+Trials: 6  |  Send: 3.0s  |  Silence: 2.0s  |  Bound: 600ms
 ────────────────────────────────────────────
   Trial 1:  543ms  [PASS]
   Trial 2:  570ms  [PASS]

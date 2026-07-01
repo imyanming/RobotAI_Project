@@ -1,4 +1,6 @@
 Gesture Accuracy Test — 2026-06-04 12:31:22
+Note: Original label was BOOST; renamed to CLUTCH in v2 with same
+underlying gesture (all five fingers extended).
 ========================================================
   Gesture                Cmd    Correct   Acc
 --------------------------------------------------------
@@ -9,6 +11,6 @@ Gesture Accuracy Test — 2026-06-04 12:31:22
   BACKWARD               S      20/20     100%
   STRAFE LEFT            A      17/20      85%
   STRAFE RIGHT           D      20/20     100%
-  BOOST                  BOOST  20/20     100%
+  CLUTCH                 CLUTCH 20/20     100%
 ========================================================
   OVERALL                       157/160      98%
