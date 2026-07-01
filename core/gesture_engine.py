@@ -24,8 +24,8 @@ class GestureEngine:
     Finger → command mapping
     ──────────────────────────────────────────────
     0  fingers  (fist)                      SPACE   stop / lock to IDLE
-    thumb only                              Q       CW  rotate
-    thumb + index  (L-shape)                E       CCW rotate
+    thumb only                              E       CCW rotate
+    thumb + index  (L-shape)                Q       CW  rotate
     index only                              W       forward
     index + middle                          S       backward
     index + middle + ring                   A       strafe left
@@ -118,7 +118,7 @@ class GestureEngine:
                 return 'SPACE', 0.0
 
             else:
-                if confirmed_gesture == 'SPACE':  # 看到握拳，強制煞車並重新上鎖休眠！
+                if confirmed_gesture == 'SPACE':  # Fist confirmed: force-stop and return to IDLE
                     self.state = 'IDLE'
                     self._locked_cmd = "SPACE"
                     self._locked_speed = 0.0
@@ -126,7 +126,7 @@ class GestureEngine:
                     return 'SPACE', 0.0
 
                 elif confirmed_gesture == _CLUTCH_CMD:
-                    # 已經喚醒的狀態下再看到全開手掌，維持 TRACKING (或忽略)
+                    # Open palm while already awake: stay in TRACKING
                     return 'SPACE', 0.0
 
                 self._locked_cmd   = confirmed_gesture
@@ -160,10 +160,10 @@ def _classify(lm):
         return _CLUTCH_CMD, 0.0
 
     if (t, i, m, r, p) == (True,  False, False, False, False):
-        return "Q", ROT_SPEED
+        return "E", ROT_SPEED
 
     if (t, i, m, r, p) == (True,  True,  False, False, False):
-        return "E", ROT_SPEED
+        return "Q", ROT_SPEED
 
     if (t, i, m, r, p) == (False, True,  False, False, False):
         return "W", TRANS_SPEED

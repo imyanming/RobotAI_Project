@@ -29,10 +29,10 @@ from datetime import datetime
 #  Each Motor() pin pair drives one wheel's H-bridge in PWM mode.
 # ─────────────────────────────────────────
 motor_list = [
-    ("M1 前", Motor(forward=5,  backward=6,  pwm=True, enable=12)),
-    ("M2 左", Motor(forward=26, backward=16, pwm=True, enable=13)),
-    ("M3 後", Motor(forward=23, backward=24, pwm=True, enable=18)),
-    ("M4 右", Motor(forward=25, backward=27, pwm=True, enable=19)),
+    ("M1 front", Motor(forward=5,  backward=6,  pwm=True, enable=12)),
+    ("M2 left", Motor(forward=26, backward=16, pwm=True, enable=13)),
+    ("M3 back", Motor(forward=23, backward=24, pwm=True, enable=18)),
+    ("M4 right", Motor(forward=25, backward=27, pwm=True, enable=19)),
 ]
 
 m1_front = motor_list[0][1]
@@ -126,7 +126,7 @@ def rotate_ccw(spd):
     m3_back.forward(spd)
     m4_right.backward(spd)
 
-# 指令 → (函式, 速度)
+# Command → (function, speed)
 CMD_MAP = {
     "W": (move_forward,  TRANS_SPEED),
     "S": (move_backward, TRANS_SPEED),
@@ -165,7 +165,7 @@ def watchdog_thread():
         sleep(0.1)
 
 # ─────────────────────────────────────────
-#  主程式：UDP 監聽迴圈
+#  Main: UDP receive loop
 # ─────────────────────────────────────────
 def main():
     global last_recv_time, watchdog_active, last_cmd, _watchdog_fired
@@ -177,20 +177,20 @@ def main():
     wd = threading.Thread(target=watchdog_thread, daemon=True)
     wd.start()
 
-    print(f"🛡️  pi_udp_omni 啟動，監聽 UDP Port {UDP_PORT}")
-    print(f"⚡ 平移: {int(TRANS_SPEED*100)}%  旋轉: {int(ROT_SPEED*100)}%  "
-          f"斷線煞車: {WATCHDOG_TIMEOUT}s")
-    print(f"📋 CMD log  → {CMD_LOG}")
-    print(f"📋 Watchdog → {WATCHDOG_LOG}")
+    print(f"pi_udp_omni started, listening on UDP port {UDP_PORT}")
+    print(f"Translation: {int(TRANS_SPEED*100)}%  Rotation: {int(ROT_SPEED*100)}%  "
+          f"Watchdog timeout: {WATCHDOG_TIMEOUT}s")
+    print(f"CMD log      → {CMD_LOG}")
+    print(f"Watchdog log → {WATCHDOG_LOG}")
     print("──────────────────────────────────────────")
-    print(" 接受指令: W / S / A / D / Q / E / SPACE")
+    print("  Commands: W / S / A / D / Q / E / SPACE")
     print("──────────────────────────────────────────")
 
     labels = {
-        "W": "⬆️  前進", "S": "⬇️  後退",
-        "A": "⬅️  左移", "D": "➡️  右移",
-        "Q": "↻  順時針", "E": "↺  逆時針",
-        "SPACE": "🛑  停止",
+        "W": "Forward",    "S": "Backward",
+        "A": "Strafe L",   "D": "Strafe R",
+        "Q": "Rotate CW",  "E": "Rotate CCW",
+        "SPACE": "Stop",
     }
 
     try:
@@ -212,7 +212,7 @@ def main():
                 log_recovered()
                 _watchdog_fired = False
 
-            # ── 指令分派 ────────────────────────────────────────────
+            # ── Dispatch command ────────────────────────────────────
             if cmd == "SPACE":
                 all_stop()
                 if last_cmd != "SPACE":
@@ -227,12 +227,12 @@ def main():
                     print(f"[{addr[0]}] {labels.get(cmd, cmd)}")
 
     except KeyboardInterrupt:
-        print("\n⚠️  Ctrl+C — 緊急停止所有馬達")
+        print("\nCtrl+C — emergency stop, halting all motors")
     finally:
         watchdog_active = False
         all_stop()
         sock.close()
-        print("✅ 馬達已安全關閉")
+        print("All motors stopped safely.")
 
 if __name__ == "__main__":
     main()

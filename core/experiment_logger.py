@@ -77,17 +77,17 @@ class ExperimentLogger:
 
     def set_experiment_id(self, exp_id: int) -> None:
         self._exp_id = exp_id
-        print(f"[Logger] 實驗編號 → {exp_id}")
+        print(f"[Logger] Experiment ID → {exp_id}")
 
     def mark_event(self, description: str = "MANUAL_EVENT") -> None:
         """Stamp a named event at the current timestamp."""
         if not self._recording:
-            print("[Logger] 未在記錄中，忽略事件標記")
+            print("[Logger] Not recording — event mark ignored")
             return
         ts  = time.time()
         rel = ts - self._start_time
         self._events.append({'elapsed_s': round(rel, 3), 'description': description})
-        print(f"[Logger] 事件 ▶ {description}  (+{rel:.1f}s)")
+        print(f"[Logger] Event: {description}  (+{rel:.1f}s)")
 
     def log_frame(self, ts: float, raw_cmd, locked_cmd: str,
                   speed: float, state: str, fps: float,
@@ -153,7 +153,7 @@ class ExperimentLogger:
         if self._recording:
             self._stop()
         if not self._frames:
-            msg = "[Logger] 沒有記錄到任何資料。"
+            msg = "[Logger] No data recorded。"
             print(msg)
             return msg
         return self._save()
@@ -175,12 +175,12 @@ class ExperimentLogger:
         self._streak_start_ts = None
         self._lock_events     = []
         print(f"[Logger] ● REC  session={self._session_ts}  "
-              f"實驗={self._exp_id or '未設定'}")
+              f"exp={self._exp_id or 'unset'}")
 
     def _stop(self) -> None:
         self._recording = False
         dur = time.time() - self._start_time
-        print(f"[Logger] ■ STOP  {len(self._frames)} 幀  {dur:.1f}s")
+        print(f"[Logger] ■ STOP  {len(self._frames)} frames  {dur:.1f}s")
 
     def _save(self) -> str:
         ts       = self._session_ts

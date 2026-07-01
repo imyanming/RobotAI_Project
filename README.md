@@ -1,8 +1,31 @@
 # RobotAI Project — Finger-Count Gesture Control for Omnidirectional Mobile Robot
 
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![Platform](https://img.shields.io/badge/Platform-Raspberry%20Pi%201%20B%2B-red)
+![Conference](https://img.shields.io/badge/ICKII-2026-green)
+
 > **Paper:** "Finger-Count Gesture Control for Omnidirectional Mobile Robot with Edge-Host Decoupled Architecture and Dependable Failsafe Design"  
 > **Conference:** ICKII 2026, August 14–16, 2026, Sendai, Japan  
-> **Authors:** Yan-Ming Lin, Tse-Chuan Hsu — Soochow University
+> **Authors:** Yan-Ming Lin, Tse-Chuan Hsu — Soochow University  
+> **Contact:** imyanming@gmail.com
+
+---
+
+## Table of Contents
+
+- [System Overview](#system-overview)
+- [Gesture Vocabulary](#gesture-vocabulary)
+- [Safety Architecture](#safety-architecture--4-layer-dependability-stack)
+- [Repository Structure](#repository-structure)
+- [Quick Start](#quick-start)
+- [Experimental Results](#experimental-results)
+- [Troubleshooting](#troubleshooting)
+- [Future Work](#future-work)
+- [Hardware](#hardware)
+- [Dependencies](#dependencies)
+- [Citation](#citation)
+- [License](#license)
 
 ---
 
@@ -39,8 +62,8 @@ UDP command ──────────────────→ pi_udp_omn
 | Extended Fingers | Pose | Command | Function |
 |---|---|---|---|
 | None | Fist | SPACE | Emergency stop |
-| Thumb only | — | Q | Clockwise rotation |
-| Thumb + Index | L-shape | E | Counter-clockwise rotation |
+| Thumb only | — | E | Counter-clockwise rotation |
+| Thumb + Index | L-shape | Q | Clockwise rotation |
 | Index only | — | W | Forward |
 | Index + Middle | — | S | Backward |
 | Index + Middle + Ring | — | A | Strafe left |
@@ -90,14 +113,14 @@ RobotAI_Project/
 │   └── pi_udp_omni.py                # Mirror of the Pi's UDP command receiver + motor control
 ├── docs/
 │   ├── architecture_v2.png          # System architecture diagram
+│   ├── gesture_diagram.html         # Source for Figure 3 (rendered to PNG via Playwright)
 │   ├── gesture_diagram.png          # Figure 3 — 8-gesture vocabulary diagram
 │   ├── accuracy_chart.png           # Figure 5 — per-class accuracy chart
 │   └── SUBMISSION_CHECKLIST.md      # Conference submission checklist
-├── logs/                            # Experiment logs (auto-generated)
+├── logs/                            # Experiment logs (auto-generated, not tracked)
 │   ├── accuracy_20260604.txt        # Gesture accuracy test results (98.1%)
 │   ├── watchdog_results.txt         # Watchdog response time results (mean 533ms)
 │   └── experiment_*.csv             # Per-frame telemetry CSV files
-├── referencepap/                    # Reference papers (PDFs)
 ├── requirements.txt                  # Mac (host) Python dependencies
 ├── .gitignore
 └── README.md                        # This file
@@ -114,7 +137,7 @@ The Pi itself keeps its own copy of `core/{pi_fast_stream.py,pi_udp_omni.py}` pl
 ### 1. Set up the Raspberry Pi from scratch
 
 ```bash
-ssh imyanming@192.168.68.102
+ssh imyanming@192.168.68.103
 
 # System packages
 sudo apt update
@@ -138,7 +161,7 @@ Notes specific to this hardware (Pi 1 B+, Bookworm/libcamera):
 ### 2. Start the robot (Pi)
 
 ```bash
-ssh imyanming@192.168.68.102
+ssh imyanming@192.168.68.103
 ~/RobotAI_Project/start.sh
 ```
 
@@ -187,7 +210,7 @@ for i in $(seq 1 254); do ping -c 1 -W 1 192.168.68.$i &>/dev/null && echo "192.
 
 **Camera not working?** SSH into the Pi and check libcamera sees it (not `vcgencmd`, which is unreliable on this OS):
 ```bash
-ssh imyanming@192.168.68.102
+ssh imyanming@192.168.68.103
 rpicam-hello --list-cameras
 ```
 
@@ -199,7 +222,7 @@ pip install -r requirements.txt
 
 **No video / no motor response after `start.sh`?** Check the two services are actually running and inspect their logs:
 ```bash
-ssh imyanming@192.168.68.102
+ssh imyanming@192.168.68.103
 pgrep -fa 'pi_fast_stream|pi_udp_omni'
 tail -n 30 ~/RobotAI_Project/logs/pi_fast_stream.log ~/RobotAI_Project/logs/pi_udp_omni.log
 ```

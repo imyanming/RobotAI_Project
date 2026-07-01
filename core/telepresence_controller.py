@@ -29,8 +29,8 @@ from experiment_logger import ExperimentLogger
 # ─────────────────────────────────────────
 #  Network / communication settings
 # ─────────────────────────────────────────
-STREAM_URL   = "http://192.168.68.102:8000/stream.mjpg"
-PI_HOST      = "192.168.68.102"
+STREAM_URL   = "http://192.168.68.103:8000/stream.mjpg"
+PI_HOST      = "192.168.68.103"
 PI_PORT      = 9000
 UDP_INTERVAL = 0.10
 MAX_BUF      = 65536
@@ -47,7 +47,7 @@ class RequestsStream:
 
     def _run(self):
         try:
-            print("🔗 戰車視角連線中...")
+            print("Connecting to robot FPV stream...")
             res = requests.get(self.url, stream=True, timeout=30)
             buf = b''
             for chunk in res.iter_content(chunk_size=4096):
@@ -72,7 +72,7 @@ class RequestsStream:
                         self.frame = img
                     buf = buf[b+2:]
         except Exception as e:
-            print(f"⚠️ 戰車串流中斷: {e}")
+            print(f"FPV stream disconnected: {e}")
 
     def read(self):
         return (True, self.frame.copy()) if self.frame is not None else (False, None)
@@ -110,7 +110,7 @@ class CommandSender:
 _LABEL = {
     "W":          "FORWARD ▲",     "S": "BACKWARD ▼",
     "A":          "STRAFE LEFT ◀", "D": "STRAFE RIGHT ▶",
-    "Q":          "ROTATE CW ↻",   "E": "ROTATE CCW ↺",
+    "E":          "ROTATE CCW ↺",   "Q": "ROTATE CW ↻",
     "SPACE":      "STOP",
     _CLUTCH_CMD:  "SYSTEM WAKE UP",
 }
@@ -142,8 +142,8 @@ _KEYMAP = """
 # ─────────────────────────────────────────
 _TEST_GESTURES = [
     ("SPACE",      "STOP",         "Fist — all fingers closed"),
-    ("Q",          "ROTATE CW",    "Thumb only"),
-    ("E",          "ROTATE CCW",   "Thumb + Index  (L-shape)"),
+    ("E",          "ROTATE CCW",   "Thumb only"),
+    ("Q",          "ROTATE CW",    "Thumb + Index  (L-shape)"),
     ("W",          "FORWARD",      "Index finger only"),
     ("S",          "BACKWARD",     "Index + Middle"),
     ("A",          "STRAFE LEFT",  "3 fingers  (index, middle, ring)"),
@@ -381,7 +381,7 @@ def _draw_test_overlay(canvas, test, now):
 #  Main loop
 # ─────────────────────────────────────────
 def main():
-    print("🧠 載入 MediaPipe 單手追蹤模型...")
+    print("Loading MediaPipe hand-tracking model...")
     mp_hands = mp.solutions.hands
     hands    = mp_hands.Hands(
         static_image_mode=False, max_num_hands=1,
@@ -391,10 +391,10 @@ def main():
     logger   = ExperimentLogger()
     test     = GestureAccuracyTest()
 
-    print("📷 啟動 Mac 視訊鏡頭...")
+    print("Starting Mac webcam...")
     mac_cam = cv2.VideoCapture(0)
 
-    print("📡 啟動戰車 FPV 串流...")
+    print("Starting robot FPV stream...")
     tank_stream = RequestsStream(STREAM_URL)
     sender      = CommandSender(PI_HOST, PI_PORT)
 
@@ -407,6 +407,7 @@ def main():
     show_stream  = True
 
     fps, fps_n, fps_t = 0, 0, time.time()
+    _WIN = "Telepresence Command Center"
 
     while True:
         now = time.time()
@@ -529,12 +530,24 @@ def main():
                 cv2.putText(main_bg, "REC", (BG_W - 258, 36),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.55, (0, 0, 220), 2)
 
-        cv2.imshow("Telepresence Command Center", main_bg)
+        cv2.imshow(_WIN, main_bg)
 
-        # ── 9. Keyboard input (see _KEYMAP above for the full shortcut list) ──
+        # ── 9. Keyboard input + window-close detection ──────────────────────
         key = cv2.waitKey(1) & 0xFF
 
+        # X-button close: getWindowProperty returns -1 when the window is gone.
+        # Without this check the Python process keeps running after the user
+        # closes the window, continues sending the last locked command over UDP,
+        # and the robot never stops (the watchdog never sees silence).
+        if cv2.getWindowProperty(_WIN, cv2.WND_PROP_VISIBLE) < 1:
+            sender.send("SPACE")
+            time.sleep(0.15)
+            logger.finalize()
+            break
+
         if key == ord('q'):
+            sender.send("SPACE")
+            time.sleep(0.15)
             logger.finalize()
             break
 
@@ -550,14 +563,14 @@ def main():
             show_stream = not show_stream
             if show_stream:
                 tank_stream = RequestsStream(STREAM_URL)
-                print("📡 串流模式")
+                print("FPV stream mode")
             else:
                 tank_stream.release()
-                print("🖐  純手勢模式")
+                print("Gesture-only mode")
 
         elif key in (ord('l'), ord('r')):
             rec = logger.toggle_recording()
-            print("● REC 開始" if rec else "■ REC 停止")
+            print("● Recording started" if rec else "■ Recording stopped")
 
         elif ord('1') <= key <= ord('5'):
             logger.set_experiment_id(key - ord('0'))

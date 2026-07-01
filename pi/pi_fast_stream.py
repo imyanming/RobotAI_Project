@@ -56,7 +56,7 @@ class StreamingHandler(BaseHTTPRequestHandler):
         else:
             self.send_error(404)
 
-print('📷 正在啟動樹莓派相機...')
+print('Starting Pi camera...')
 
 try:
     picam2 = Picamera2()
@@ -65,14 +65,14 @@ try:
     picam2.start()
     time.sleep(1)
 except Exception as e:
-    print('\n❌ 嚴重錯誤：Python 抓不到攝影機！')
-    print(f'👉 請檢查：1. 相機排線是否插緊？ 2. 有沒有在 raspi-config 中啟用相機？ ({e})')
+    print('\nFatal: camera not accessible.')
+    print(f'Check: (1) ribbon cable seated, (2) camera enabled in raspi-config. ({e})')
 else:
     server = ThreadedHTTPServer(('', 8000), StreamingHandler)
-    print('🚀 戰車視覺廣播站已在 Port 8000 啟動...')
+    print('MJPEG stream server running on port 8000.')
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         picam2.stop()
         server.socket.close()
-        print('\n🛑 廣播站已關閉')
+        print('\nStream server stopped.')
