@@ -5,7 +5,7 @@ Protocol per trial:
   1. Send UDP 'Q' every 100 ms for 3 s  (robot rotates)
   2. Stop sending for 2 s               (simulate WiFi disconnect)
      → Pi watchdog fires ~500 ms into the silence
-  3. Repeat 5 times
+  3. Repeat 6 times
 
 After all trials:
   - SSH to Pi, read /tmp/watchdog_log.txt
@@ -32,7 +32,7 @@ LOCAL_SCRIPT  = os.path.join(os.path.dirname(__file__), '..', 'pi', 'pi_udp_omni
 WATCHDOG_LOG  = "/tmp/watchdog_log.txt"
 RESULTS_DIR   = os.path.join(os.path.dirname(__file__), '..', 'logs')
 
-TRIALS        = 5
+TRIALS        = 6
 SEND_SECS     = 3.0
 SILENCE_SECS  = 2.0
 SEND_INTERVAL = 0.10
