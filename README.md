@@ -44,7 +44,7 @@ MacBook (Host)                        Raspberry Pi 1 B+ (Edge)
 Built-in Camera                       IMX219 / USB Camera
      ↓                                      ↓
 MediaPipe Hands (21 landmarks)        pi_fast_stream.py
-     ↓                                (MJPEG, 320×240, 30fps)
+     ↓                                (MJPEG, 640×480, variable fps*)
 GestureEngine (classify + lock)             ↓
      ↓                          ←─── MJPEG over HTTP :8000
 telepresence_controller.py
@@ -54,6 +54,9 @@ UDP command ──────────────────→ pi_udp_omn
                                  gpiozero Motor × 4
                                  (Mecanum wheel drive)
 ```
+\* No fixed `CAP_PROP_FPS` is configured — the Pi capture rate depends on host
+CPU headroom; two logged sessions measured mean rates of 15.7 fps and 23.5 fps
+(range 15.0-31.0 fps).
 
 ---
 
@@ -113,14 +116,15 @@ RobotAI_Project/
 │   └── pi_udp_omni.py                # Mirror of the Pi's UDP command receiver + motor control
 ├── docs/
 │   ├── architecture_v2.png          # System architecture diagram
-│   ├── gesture_diagram.html         # Source for Figure 3 (rendered to PNG via Playwright)
+│   ├── gesture_diagram.html         # Source for Figure 3 (rendered to PNG via headless Chrome)
 │   ├── gesture_diagram.png          # Figure 3 — 8-gesture vocabulary diagram
-│   ├── accuracy_chart.png           # Figure 5 — per-class accuracy chart
-│   └── SUBMISSION_CHECKLIST.md      # Conference submission checklist
-├── logs/                            # Experiment logs (auto-generated, not tracked)
+│   └── accuracy_chart.png           # Figure 5 — per-class accuracy chart
+├── logs/                            # Experiment logs — the 3 files below ARE tracked,
+│   │                                 # committed as evidence backing the paper's results
 │   ├── accuracy_20260604.txt        # Gesture accuracy test results (98.1%)
 │   ├── watchdog_results.txt         # Watchdog response time results (mean 533ms)
-│   └── experiment_*.csv             # Per-frame telemetry CSV files
+│   ├── latency_slowmo_trials.txt    # End-to-end latency results (mean 1480ms, N=11)
+│   └── experiment_*.csv             # Per-frame telemetry CSV files (untracked)
 ├── requirements.txt                  # Mac (host) Python dependencies
 ├── .gitignore
 └── README.md                        # This file
@@ -197,7 +201,7 @@ python3 core/telepresence_controller.py
 | Gesture recognition accuracy | **98.1%** (157/160 trials) |
 | Weakest gesture (Strafe Left) | 85% (17/20) |
 | Watchdog halt response (mean) | **533 ms** (6 trials, all < 600 ms) |
-| End-to-end command latency | **1260 ms** (dominated by MJPEG stream ~900 ms) |
+| End-to-end command latency | **1480 ms** mean (range 380-2960 ms, N=11 trials) |
 
 ---
 
@@ -234,10 +238,15 @@ tail -n 30 ~/RobotAI_Project/logs/pi_fast_stream.log ~/RobotAI_Project/logs/pi_u
 - **Pi camera gesture recognition:** move gesture classification onto the Pi itself
   using the existing `Picamera2`/libcamera capture pipeline, removing the dependency on
   streaming raw MJPEG to the host for control purposes (the stream would remain available
-  for human FPV viewing). This would cut end-to-end command latency by eliminating the
-  ~900 ms MJPEG round-trip currently dominating the 1260 ms figure above, at the cost of
-  running a lightweight detector on the Pi 1 B+'s limited ARM11 CPU — likely requiring a
-  much smaller/quantized model than the MediaPipe Hands pipeline currently run on the Mac.
+  for human FPV viewing). This would cut end-to-end command latency by removing the MJPEG
+  round-trip and unfixed host capture rate contributing to the current 1480 ms mean
+  latency figure above, at the cost of running a lightweight detector on the Pi 1 B+'s
+  limited ARM11 CPU — likely requiring a much smaller/quantized model than the MediaPipe
+  Hands pipeline currently run on the Mac.
+- **Deterministic capture frame rate:** fix the host capture pipeline to an explicit
+  30 fps (no `CAP_PROP_FPS` is currently set) and instrument per-stage hardware
+  timestamps, replacing the current end-to-end latency measurement with a precise
+  component-level breakdown.
 
 ---
 

@@ -26,7 +26,7 @@ from datetime import datetime
 PI_HOST       = "192.168.68.103"
 PI_PORT       = 9000
 PI_USER       = "imyanming"
-PI_PASS       = "1234"
+PI_PASS       = os.environ.get("PI_PASS", "")  # Set via: export PI_PASS=yourpassword
 PI_SCRIPT     = f"/home/{PI_USER}/RobotAI_Project/core/pi_udp_omni.py"
 LOCAL_SCRIPT  = os.path.join(os.path.dirname(__file__), '..', 'pi', 'pi_udp_omni.py')
 WATCHDOG_LOG  = "/tmp/watchdog_log.txt"
@@ -173,6 +173,12 @@ def report(response_times, log_text):
 #  Main
 # ─────────────────────────────────────────
 def main():
+    if not PI_PASS:
+        print("ERROR: PI_PASS environment variable is not set.")
+        print("Set it before running this script, e.g.:")
+        print("  export PI_PASS=yourpassword")
+        sys.exit(1)
+
     sep = "=" * 36
     print(sep)
     print("  Watchdog Response-Time Test")
