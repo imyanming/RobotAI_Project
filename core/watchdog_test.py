@@ -3,7 +3,7 @@ Watchdog response-time test for the omnidirectional robot base.
 
 Protocol per trial:
   1. Send UDP 'Q' every 100 ms for 3 s  (robot rotates)
-  2. Stop sending for 2 s               (simulate WiFi disconnect)
+  2. Stop sending for 2 s               (halt transmission to simulate connectivity loss)
      → Pi watchdog fires ~500 ms into the silence
   3. Repeat 6 times
 
