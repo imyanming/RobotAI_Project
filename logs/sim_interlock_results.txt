@@ -1,0 +1,30 @@
+Restart-interlock simulation — 2026-09-27 20:02:36
+Script: tests/sim_interlock.py  |  Python 3.12.10  |  simulated GPIO, real localhost UDP + watchdog timing
+========================================================
+Note: this test checks command-handling behaviour, not timing. The watchdog
+latencies printed below come from a Windows PC (sleep granularity ~15 ms) and
+are not comparable to the hardware measurements in logs/watchdog_results.txt.
+
+### Current pi/pi_udp_omni.py (with restart interlock)
+PASS  startup: W without prior SPACE is ignored
+PASS  after SPACE, W drives forward
+🛡️  WATCHDOG TRIGGERED at 20:02:38.677 (silent for 601ms)
+PASS  silence triggers watchdog all_stop
+🔄  RECOVERED at 20:02:39.377
+PASS  after reconnect, retransmitted W is ignored (no auto-resume)
+PASS  after SPACE, Q rotates with the CW motor pattern
+PASS  watchdog log written (TRIGGERED + RECOVERED)
+6/6 passed
+exit code: 0
+
+### experiment-2026-06 pi/pi_udp_omni.py (version used for the paper's experiments)
+FAIL  startup: W without prior SPACE is ignored
+PASS  after SPACE, W drives forward
+🛡️  WATCHDOG TRIGGERED at 20:02:43.684 (silent for 600ms)
+PASS  silence triggers watchdog all_stop
+🔄  RECOVERED at 20:02:44.384
+FAIL  after reconnect, retransmitted W is ignored (no auto-resume)
+PASS  after SPACE, Q rotates with the CW motor pattern
+PASS  watchdog log written (TRIGGERED + RECOVERED)
+4/6 passed
+exit code: 1

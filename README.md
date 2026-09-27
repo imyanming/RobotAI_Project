@@ -114,16 +114,19 @@ RobotAI_Project/
 ├── pi/
 │   ├── pi_fast_stream.py             # Mirror of the Pi's MJPEG stream server (port 8000)
 │   └── pi_udp_omni.py                # Mirror of the Pi's UDP command receiver + motor control
+├── tests/
+│   └── sim_interlock.py              # Restart-interlock check with simulated motors (no robot needed)
 ├── docs/
 │   ├── architecture_v2.png          # System architecture diagram
 │   ├── gesture_diagram.html         # Source for Figure 2 (rendered to PNG via headless Chrome)
 │   ├── gesture_diagram.png          # Figure 2 — 8-gesture vocabulary diagram
 │   └── accuracy_chart.png           # Per-class accuracy chart (Table 2 data)
-├── logs/                            # Experiment logs — the 3 files below ARE tracked,
+├── logs/                            # Experiment logs — the 4 files below ARE tracked,
 │   │                                 # committed as evidence backing the paper's results
 │   ├── accuracy_20260604.txt        # Gesture accuracy test results (98.1%)
 │   ├── watchdog_results.txt         # Watchdog response time results (mean 533ms)
 │   ├── latency_slowmo_trials.txt    # End-to-end latency results (mean 1480ms, N=11)
+│   ├── sim_interlock_results.txt    # Restart-interlock simulation (6/6 current, 4/6 experiment version)
 │   └── experiment_*.csv             # Per-frame telemetry CSV files (untracked)
 ├── requirements.txt                  # Mac (host) Python dependencies
 ├── .gitignore
