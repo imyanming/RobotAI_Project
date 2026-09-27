@@ -3,8 +3,8 @@ pi_udp_omni.py — Edge-side UDP command receiver and motor controller.
 
 Runs on the Raspberry Pi only. Listens for single-character ASCII commands
 (W/S/A/D/Q/E/SPACE) over UDP from the Host (Mac), drives the four omni
-wheels accordingly via gpiozero, and implements the two lower safety layers
-described in the paper:
+wheels accordingly via gpiozero, and implements the two edge-side safety layers
+described in the paper (layers 3 and 4; layers 1-2 run on the Host):
   - Motor safe-transition guard: safe_transition() always fully stops all
     motors and waits briefly before reversing direction, so an abrupt
     forward<->backward gesture change cannot reverse the H-bridges instantly.
@@ -86,7 +86,7 @@ def all_stop():
         motor.stop()
 
 def safe_transition():
-    # Motor safe-transition guard (dependability layer #2): always fully
+    # Motor safe-transition guard (dependability layer 4): always fully
     # de-energise all four motors and pause briefly before issuing a new
     # direction. Without this, an instantaneous forward->backward command
     # would reverse the H-bridges while still under load, which is the
@@ -139,7 +139,7 @@ CMD_MAP = {
 }
 
 # ─────────────────────────────────────────
-#  Watchdog: dependability layer #1 — auto-stop on communication loss.
+#  Watchdog: dependability layer 3 — auto-stop on communication loss.
 #  Runs on its own daemon thread, independent of the UDP recv loop in
 #  main(), so it keeps firing even if the Host stops sending entirely
 #  (Wi-Fi drop, Host crash, etc.) rather than relying on a timeout inside

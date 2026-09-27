@@ -36,15 +36,15 @@ A gesture-controlled omnidirectional robot using an **Edge-Host Decoupled** arch
 - **Host (MacBook):** Runs MediaPipe hand tracking + gesture recognition + sends UDP commands
 - **Edge (Raspberry Pi 1 B+):** Receives UDP commands → drives 4 omni wheels + streams MJPEG video
 
-The operator controls the robot using single-hand **finger-count micro-gestures** performed with the arm resting flat on a surface (zero fatigue), confirmed by a **latch-state machine** that locks the command so the hand can be removed entirely.
+The operator controls the robot using single-hand **finger-count micro-gestures** performed with the arm resting flat on a surface (low fatigue), confirmed by a **latch-state machine** that locks the command so the hand can be removed entirely.
 
 ```
 MacBook (Host)                        Raspberry Pi 1 B+ (Edge)
 ──────────────────────────────        ──────────────────────────────
-Built-in Camera                       IMX219 / USB Camera
-     ↓                                      ↓
+Built-in Camera (gestures)            IMX219 camera (FPV only)
+     ↓  variable fps*                       ↓
 MediaPipe Hands (21 landmarks)        pi_fast_stream.py
-     ↓                                (MJPEG, 640×480, variable fps*)
+     ↓                                (MJPEG, 640×480)
 GestureEngine (classify + lock)             ↓
      ↓                          ←─── MJPEG over HTTP :8000
 telepresence_controller.py
@@ -54,9 +54,9 @@ UDP command ──────────────────→ pi_udp_omn
                                  gpiozero Motor × 4
                                  (omni wheel drive)
 ```
-\* No fixed `CAP_PROP_FPS` is configured — the Pi capture rate depends on host
-CPU headroom; two logged sessions measured mean rates of 15.7 fps and 23.5 fps
-(range 15.0-31.0 fps).
+\* No fixed `CAP_PROP_FPS` is configured on the host webcam — its frame rate depends
+on host CPU headroom; two logged sessions measured mean rates of 15.7 fps and 23.5 fps
+(range 15.0-31.0 fps). The Pi camera only provides the FPV feed shown on the HUD.
 
 ---
 
@@ -83,7 +83,7 @@ CPU headroom; two logged sessions measured mean rates of 15.7 fps and 23.5 fps
 |---|---|---|
 | 1 | **Safety Clutch (CLUTCH)** | System starts in IDLE — all motion commands silently ignored until operator shows open palm |
 | 2 | **Gesture Confirmation Gate** | Same gesture must appear in 3 consecutive frames before it is accepted (rejects transient misclassifications) |
-| 3 | **UDP Watchdog** | Robot halts within ≤ 600 ms (mean 533 ms) of any communication loss — Wi-Fi drop, host crash, cable pull |
+| 3 | **UDP Watchdog** | Robot halts within ≤ 600 ms (mean 533 ms) of any communication loss — Wi-Fi drop, host crash, cable pull. A restart interlock then keeps it stopped until the operator shows a fist, so it never resumes by itself when the link returns (verified in simulation, `tests/sim_interlock.py`) |
 | 4 | **Motor Safe-Transition Guard** | Full stop + 80 ms pause before every direction change; prevents H-bridge damage from instantaneous reversal |
 
 ### CLUTCH / IDLE State Machine
@@ -239,14 +239,11 @@ tail -n 30 ~/RobotAI_Project/logs/pi_fast_stream.log ~/RobotAI_Project/logs/pi_u
 
 ## Future Work
 
-- **Pi camera gesture recognition:** move gesture classification onto the Pi itself
-  using the existing `Picamera2`/libcamera capture pipeline, removing the dependency on
-  streaming raw MJPEG to the host for control purposes (the stream would remain available
-  for human FPV viewing). This would cut end-to-end command latency by removing the MJPEG
-  round-trip and unfixed host capture rate contributing to the current 1480 ms mean
-  latency figure above, at the cost of running a lightweight detector on the Pi 1 B+'s
-  limited ARM11 CPU — likely requiring a much smaller/quantized model than the MediaPipe
-  Hands pipeline currently run on the Mac.
+- **Pi camera gesture input:** gestures are currently captured by the MacBook webcam
+  and the Pi camera serves only the FPV feed. Moving gesture input to the Pi camera would
+  let one camera serve both roles, at the cost of either streaming frames to the host for
+  classification or running a much smaller/quantized detector than MediaPipe Hands on the
+  Pi 1 B+'s ARM11 CPU.
 - **Deterministic capture frame rate:** fix the host capture pipeline to an explicit
   30 fps (no `CAP_PROP_FPS` is currently set) and instrument per-stage hardware
   timestamps, replacing the current end-to-end latency measurement with a precise
@@ -262,7 +259,8 @@ tail -n 30 ~/RobotAI_Project/logs/pi_fast_stream.log ~/RobotAI_Project/logs/pi_u
 | Edge motor driver | L298N dual H-bridge × 2 |
 | Edge chassis | 4-wheel omni-wheel omnidirectional platform |
 | Host compute | MacBook, Apple M-series |
-| Network | 802.11n Wi-Fi |
+| Network | 802.11n Wi-Fi (USB adapter on the Pi) |
+| Edge power | LM2596 buck converter → dedicated 5 V rail for the Pi, isolated from the motor rail |
 
 ---
 
