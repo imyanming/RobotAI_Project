@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Edge-Host Architecture (black & white)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 140mm; height: 105mm;
+    background: #fff; color: #000;
+    font-family: "Times New Roman", Times, serif;
+    position: relative;
+  }
+  #stage { position: absolute; inset: 0; }
+  svg.arrows { position: absolute; inset: 0; width: 140mm; height: 105mm; }
+
+  /* ── grouping panels ───────────────────────────────────────────── */
+  .panel { position: absolute; border-radius: 2.5mm; background: none; }
+  .panel.host { border: 0.45mm dashed #000; }   /* HOST: dashed  */
+  .panel.edge { border: 0.45mm solid  #000; }   /* EDGE: solid   */
+
+  /* ── process boxes ─────────────────────────────────────────────── */
+  .box {
+    position: absolute; border-radius: 1.2mm;
+    border: 0.42mm solid #000;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center; line-height: 1.16;
+    font-size: 8pt; padding: 0.6mm 1.2mm;
+  }
+  .box.host { background: #ffffff; }            /* HOST: white fill      */
+  .box.edge { background: #e0e0e0; }            /* EDGE: black!12 ≈ #e0  */
+  .box .sub { font-size: 7pt; font-style: italic; display: block; }
+
+  /* ── column headings ───────────────────────────────────────────── */
+  .head {
+    position: absolute; text-align: center;
+    font-size: 10pt; font-weight: 700; color: #000;
+  }
+
+  /* ── data-flow callouts: border style matches its arrow ────────── */
+  .flag {
+    position: absolute; border-radius: 1.2mm; background: #fff;
+    text-align: center; line-height: 1.2;
+    font-size: 6.5pt; font-weight: 700;
+    padding: 0.8mm 1mm;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .flag.solid  { border: 0.38mm solid  #000; }  /* UDP commands  */
+  .flag.dashed { border: 0.38mm dashed #000; }  /* MJPEG video   */
+  .flag .tiny { font-weight: 700; font-size: 6pt; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <svg class="arrows" viewBox="0 0 140 105" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <!-- filled stealth head: UDP command flow -->
+      <marker id="filled" markerWidth="7" markerHeight="7" refX="5.4" refY="2.5"
+              orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L6,2.5 L0,5 L1.5,2.5 z" fill="#000"/>
+      </marker>
+      <!-- open stealth head: MJPEG video flow -->
+      <marker id="open" markerWidth="8" markerHeight="8" refX="5.8" refY="2.5"
+              orient="auto" markerUnits="strokeWidth">
+        <path d="M0.3,0.3 L6,2.5 L0.3,4.7" fill="none"
+              stroke="#000" stroke-width="0.9"
+              stroke-linecap="round" stroke-linejoin="round"/>
+      </marker>
+      <!-- small head for the short internal arrows -->
+      <marker id="inner" markerWidth="7" markerHeight="7" refX="5.2" refY="2.5"
+              orient="auto" markerUnits="strokeWidth">
+        <path d="M0,0 L6,2.5 L0,5 L1.5,2.5 z" fill="#555"/>
+      </marker>
+    </defs>
+
+    <g stroke="#555" stroke-width="0.42" marker-end="url(#inner)">
+      <!-- HOST internal chain (HUD at top is fed by the FPV stream, not by this chain) -->
+      <line x1="30" y1="53.5" x2="30" y2="59.4"/>
+      <line x1="30" y1="75.5" x2="30" y2="82.9"/>
+      <!-- EDGE internal chain -->
+      <line x1="110" y1="30.5" x2="110" y2="32.9"/>
+      <line x1="110" y1="47.0" x2="110" y2="49.9"/>
+      <line x1="110" y1="63.0" x2="110" y2="65.9"/>
+      <line x1="110" y1="79.0" x2="110" y2="81.9"/>
+    </g>
+
+    <!-- cross-network: UDP commands, CommandSender -> UDP Listener  (SOLID, filled head) -->
+    <line x1="52" y1="90" x2="87.2" y2="57"
+          stroke="#000" stroke-width="0.62" marker-end="url(#filled)"/>
+
+    <!-- cross-network: MJPEG video, MJPEG server -> HUD  (DASHED, open head).
+         FPV only: gestures come from the MacBook webcam, not from this stream. -->
+    <line x1="88" y1="40.5" x2="53.0" y2="24"
+          stroke="#000" stroke-width="0.62" stroke-dasharray="1.8 1.2"
+          marker-end="url(#open)"/>
+  </svg>
+
+  <!-- ── panels ───────────────────────────────────────────────────── -->
+  <div class="panel host" style="left:4mm;  top:12.5mm; width:52mm; height:87.5mm;"></div>
+  <div class="panel edge" style="left:84mm; top:11.5mm; width:52mm; height:91.5mm;"></div>
+
+  <!-- ── column headings ──────────────────────────────────────────── -->
+  <div class="head" style="left:4mm;  top:5mm; width:52mm;">HOST (MacBook)</div>
+  <div class="head" style="left:84mm; top:5mm; width:52mm;">EDGE (Raspberry Pi 1 B+)</div>
+
+  <!-- ── HOST boxes ───────────────────────────────────────────────── -->
+  <div class="box host" style="left:8mm;  top:16.5mm; width:44mm; height:15mm;">
+    <div>HUD Display<span class="sub">(FPV + webcam, PiP)</span></div>
+  </div>
+  <div class="box host" style="left:8mm;  top:38.5mm; width:44mm; height:15mm;">
+    <div>MediaPipe Hand Recognition<span class="sub">(MacBook webcam input)</span></div>
+  </div>
+  <div class="box host" style="left:8mm;  top:60.5mm; width:44mm; height:15mm;">GestureEngine + State Machine</div>
+  <div class="box host" style="left:8mm;  top:84mm;   width:44mm; height:12mm;">CommandSender (UDP)</div>
+
+  <!-- ── EDGE boxes ───────────────────────────────────────────────── -->
+  <div class="box edge" style="left:88mm; top:15.5mm; width:44mm; height:15mm;">
+    <div>Pi NoIR Camera<span class="sub">(FPV source)</span></div>
+  </div>
+  <div class="box edge" style="left:88mm; top:34mm; width:44mm; height:13mm;">MJPEG Stream Server</div>
+  <div class="box edge" style="left:88mm; top:51mm; width:44mm; height:12mm;">UDP Listener</div>
+  <div class="box edge" style="left:88mm; top:67mm; width:44mm; height:12mm;">Watchdog Thread</div>
+  <div class="box edge" style="left:88mm; top:83mm; width:44mm; height:13mm;">L298N + Omni Wheels</div>
+
+  <!-- ── flow callouts ────────────────────────────────────────────── -->
+  <div class="flag dashed" style="left:56mm; top:42mm; width:27mm; height:14mm;">
+    <div>MJPEG Video Stream<br>(Pi &#8594; Mac) : 8000<br>FPV only<br><span class="tiny">~1&#8211;2&#8201;s</span></div>
+  </div>
+  <div class="flag solid" style="left:61mm; top:88mm; width:22mm; height:10mm;">
+    <div>UDP Commands<br>(Mac &#8594; Pi) : 9000</div>
+  </div>
+
+</div>
+</body>
+</html>

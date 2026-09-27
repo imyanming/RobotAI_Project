@@ -117,7 +117,8 @@ RobotAI_Project/
 ├── tests/
 │   └── sim_interlock.py              # Restart-interlock check with simulated motors (no robot needed)
 ├── docs/
-│   ├── architecture_v2.png          # System architecture diagram
+│   ├── architecture_v3_bw.html      # Source for Figure 1 (system architecture)
+│   ├── architecture_v3_bw.png       # Figure 1 — gestures from MacBook webcam; Pi camera is FPV only
 │   ├── gesture_diagram.html         # Source for Figure 2 (rendered to PNG via headless Chrome)
 │   ├── gesture_diagram.png          # Figure 2 — 8-gesture vocabulary diagram
 │   └── accuracy_chart.png           # Per-class accuracy chart (Table 2 data)
