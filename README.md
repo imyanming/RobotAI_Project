@@ -116,9 +116,9 @@ RobotAI_Project/
 │   └── pi_udp_omni.py                # Mirror of the Pi's UDP command receiver + motor control
 ├── docs/
 │   ├── architecture_v2.png          # System architecture diagram
-│   ├── gesture_diagram.html         # Source for Figure 3 (rendered to PNG via headless Chrome)
-│   ├── gesture_diagram.png          # Figure 3 — 8-gesture vocabulary diagram
-│   └── accuracy_chart.png           # Figure 5 — per-class accuracy chart
+│   ├── gesture_diagram.html         # Source for Figure 2 (rendered to PNG via headless Chrome)
+│   ├── gesture_diagram.png          # Figure 2 — 8-gesture vocabulary diagram
+│   └── accuracy_chart.png           # Per-class accuracy chart (Table 2 data)
 ├── logs/                            # Experiment logs — the 3 files below ARE tracked,
 │   │                                 # committed as evidence backing the paper's results
 │   ├── accuracy_20260604.txt        # Gesture accuracy test results (98.1%)

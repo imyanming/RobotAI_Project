@@ -2,8 +2,8 @@ End-to-End Latency Test (Slow-Motion Video Analysis) — 2026-06-04
 Method: 240 fps slow-motion video recording. Timing measured
 from the frame where the HUD command-lock indicator changes
 state to the frame where wheel rotation first becomes
-visible. Frame interval at 240fps = 4.17ms, giving
-measurement resolution of ~4ms per reading.
+visible. Frame interval at 240fps = 4.17ms; timestamps below are
+recorded to 0.01 s, so each reading has ~10ms resolution.
 ========================================================
   Trial   HUD Timestamp   Motor Timestamp   Latency
 --------------------------------------------------------
@@ -28,4 +28,4 @@ Note: High variance is attributed to the unfixed host-side
 capture frame rate (see core/telepresence_controller.py —
 no CAP_PROP_FPS is configured; actual rate depends on
 available CPU headroom during MediaPipe inference). See
-Section 4.3 and 6.4 of the paper for discussion.
+Section 4.2 of the paper for discussion.
