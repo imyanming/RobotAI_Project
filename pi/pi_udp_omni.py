@@ -12,6 +12,8 @@ described in the paper:
     last received command and force-stops the robot if that exceeds
     WATCHDOG_TIMEOUT, regardless of what the Host is doing — this is what
     halts the robot within ~533 ms of a Wi-Fi disconnect or Host crash.
+    After it fires, motion commands stay blocked until the operator sends
+    SPACE (fist), so the robot never restarts by itself when the link returns.
 
 Kept as a separate OS process from pi_fast_stream.py (video) so that a crash
 or stall in the non-safety-critical video path can never block this process
@@ -147,9 +149,14 @@ last_recv_time  = time()
 watchdog_active = True
 last_cmd        = ""
 _watchdog_fired = False   # edge-trigger: log only on transition to fired state
+# Restart interlock: after a watchdog stop (or a Pi restart), motion commands
+# are ignored until an explicit SPACE (fist) arrives. The Host keeps
+# retransmitting its locked command through a Wi-Fi drop, so without this the
+# robot would resume its previous motion by itself as soon as the link returns.
+_await_stop     = True
 
 def watchdog_thread():
-    global watchdog_active, last_cmd, _watchdog_fired
+    global watchdog_active, last_cmd, _watchdog_fired, _await_stop
     while watchdog_active:
         if time() - last_recv_time > WATCHDOG_TIMEOUT:
             if not _watchdog_fired:
@@ -160,6 +167,7 @@ def watchdog_thread():
                 _watchdog_fired = True
             all_stop()
             last_cmd = ""
+            _await_stop = True
         else:
             _watchdog_fired = False
         sleep(0.1)
@@ -168,7 +176,7 @@ def watchdog_thread():
 #  Main: UDP receive loop
 # ─────────────────────────────────────────
 def main():
-    global last_recv_time, watchdog_active, last_cmd, _watchdog_fired
+    global last_recv_time, watchdog_active, last_cmd, _watchdog_fired, _await_stop
 
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     sock.bind(('', UDP_PORT))
@@ -215,11 +223,12 @@ def main():
             # ── Dispatch command ────────────────────────────────────
             if cmd == "SPACE":
                 all_stop()
+                _await_stop = False   # operator's fist re-arms motion
                 if last_cmd != "SPACE":
                     last_cmd = "SPACE"
                     print(f"[{addr[0]}] {labels['SPACE']}")
 
-            elif cmd in CMD_MAP:
+            elif cmd in CMD_MAP and not _await_stop:
                 if cmd != last_cmd:
                     fn, spd = CMD_MAP[cmd]
                     fn(spd)

@@ -2,7 +2,8 @@
 Watchdog response-time test for the omnidirectional robot base.
 
 Protocol per trial:
-  1. Send UDP 'Q' every 100 ms for 3 s  (robot rotates)
+  1. Send 'SPACE' once (clears the Pi's post-watchdog restart interlock),
+     then UDP 'Q' every 100 ms for 3 s  (robot rotates)
   2. Stop sending for 2 s               (halt transmission to simulate connectivity loss)
      → Pi watchdog fires ~500 ms into the silence
   3. Repeat 6 times
@@ -101,6 +102,8 @@ def run_trials():
         for trial in range(1, TRIALS + 1):
             print(f"  Trial {trial}/{TRIALS}: "
                   f"sending Q for {SEND_SECS:.0f}s …", end='', flush=True)
+            sock.sendto(b'SPACE', (PI_HOST, PI_PORT))
+            time.sleep(SEND_INTERVAL)
             deadline = time.time() + SEND_SECS
             while time.time() < deadline:
                 sock.sendto(b'Q', (PI_HOST, PI_PORT))
