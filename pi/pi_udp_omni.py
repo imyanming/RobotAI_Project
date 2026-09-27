@@ -114,17 +114,17 @@ def move_right(spd):
 
 def rotate_cw(spd):
     safe_transition()
-    m1_front.forward(spd)
-    m2_left.backward(spd)
-    m3_back.forward(spd)
-    m4_right.backward(spd)
-
-def rotate_ccw(spd):
-    safe_transition()
     m1_front.backward(spd)
     m2_left.forward(spd)
     m3_back.backward(spd)
     m4_right.forward(spd)
+
+def rotate_ccw(spd):
+    safe_transition()
+    m1_front.forward(spd)
+    m2_left.backward(spd)
+    m3_back.forward(spd)
+    m4_right.backward(spd)
 
 # Command → (function, speed)
 CMD_MAP = {
