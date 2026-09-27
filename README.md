@@ -34,7 +34,7 @@
 A gesture-controlled omnidirectional robot using an **Edge-Host Decoupled** architecture:
 
 - **Host (MacBook):** Runs MediaPipe hand tracking + gesture recognition + sends UDP commands
-- **Edge (Raspberry Pi 1 B+):** Receives UDP commands → drives 4 Mecanum wheels + streams MJPEG video
+- **Edge (Raspberry Pi 1 B+):** Receives UDP commands → drives 4 omni wheels + streams MJPEG video
 
 The operator controls the robot using single-hand **finger-count micro-gestures** performed with the arm resting flat on a surface (zero fatigue), confirmed by a **latch-state machine** that locks the command so the hand can be removed entirely.
 
@@ -52,7 +52,7 @@ telepresence_controller.py
 UDP command ──────────────────→ pi_udp_omni.py
                                       ↓
                                  gpiozero Motor × 4
-                                 (Mecanum wheel drive)
+                                 (omni wheel drive)
 ```
 \* No fixed `CAP_PROP_FPS` is configured — the Pi capture rate depends on host
 CPU headroom; two logged sessions measured mean rates of 15.7 fps and 23.5 fps
@@ -256,7 +256,7 @@ tail -n 30 ~/RobotAI_Project/logs/pi_fast_stream.log ~/RobotAI_Project/logs/pi_u
 |---|---|
 | Edge compute | Raspberry Pi 1 Model B+, ARM11 @ 700 MHz, 512 MB RAM |
 | Edge motor driver | L298N dual H-bridge × 2 |
-| Edge chassis | 4-wheel Mecanum omnidirectional platform |
+| Edge chassis | 4-wheel omni-wheel omnidirectional platform |
 | Host compute | MacBook, Apple M-series |
 | Network | 802.11n Wi-Fi |
 

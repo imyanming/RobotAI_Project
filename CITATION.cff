@@ -26,7 +26,7 @@ license: MIT
 keywords:
   - gesture recognition
   - omnidirectional robot
-  - Mecanum wheels
+  - Omni wheels
   - Raspberry Pi
   - MediaPipe
   - edge computing

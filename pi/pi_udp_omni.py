@@ -2,7 +2,7 @@
 pi_udp_omni.py — Edge-side UDP command receiver and motor controller.
 
 Runs on the Raspberry Pi only. Listens for single-character ASCII commands
-(W/S/A/D/Q/E/SPACE) over UDP from the Host (Mac), drives the four Mecanum
+(W/S/A/D/Q/E/SPACE) over UDP from the Host (Mac), drives the four omni
 wheels accordingly via gpiozero, and implements the two lower safety layers
 described in the paper:
   - Motor safe-transition guard: safe_transition() always fully stops all
@@ -25,7 +25,7 @@ from datetime import datetime
 
 # ─────────────────────────────────────────
 #  Motor initialization
-#  Mecanum chassis layout: M1=front, M2=left, M3=back, M4=right.
+#  Omni-wheel chassis layout: M1=front, M2=left, M3=back, M4=right.
 #  Each Motor() pin pair drives one wheel's H-bridge in PWM mode.
 # ─────────────────────────────────────────
 motor_list = [
@@ -114,17 +114,17 @@ def move_right(spd):
 
 def rotate_cw(spd):
     safe_transition()
-    m1_front.backward(spd)
-    m2_left.forward(spd)
-    m3_back.backward(spd)
-    m4_right.forward(spd)
-
-def rotate_ccw(spd):
-    safe_transition()
     m1_front.forward(spd)
     m2_left.backward(spd)
     m3_back.forward(spd)
     m4_right.backward(spd)
+
+def rotate_ccw(spd):
+    safe_transition()
+    m1_front.backward(spd)
+    m2_left.forward(spd)
+    m3_back.backward(spd)
+    m4_right.forward(spd)
 
 # Command → (function, speed)
 CMD_MAP = {
